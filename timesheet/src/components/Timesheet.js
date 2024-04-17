@@ -138,7 +138,7 @@ function buildLineItemsTable(items) {
       {buildLineItemsTable(lineItems)}
 
       <div>
-        Total Mins Worked: {totalMinsWorked}
+        Total Time: {totalMinsWorked}
       </div>
 
       <div>
