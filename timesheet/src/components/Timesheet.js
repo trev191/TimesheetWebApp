@@ -46,6 +46,7 @@ function Timesheet() {
   const [rate, setRate] = useState(50);
   const [totalMinsWorked, setTotalMinsWorked] = useState(0);
   const [lineItems, setLineItems] = useState([]);
+  const [description, setDescription] = useState('');
 
   // Set line items list upon startup
   useEffect(() => {
@@ -61,6 +62,11 @@ function Timesheet() {
   function updateNameSelected(event) {
     setNameSelected(event.target.value);
     updateLineItemsList(event.target.value);
+  }
+
+  // When name selected changes, update name state as well as line items list
+  function updateDescription(event) {
+    setDescription(event.target.value);
   }
 
   function updateLineItemsList(name) {
@@ -125,15 +131,21 @@ function buildLineItemsTable(items) {
   return (
     <div className="timesheet">
       {/* TODO: restrict input to only select timecard names that exist */}
-      <label>
-        Timesheet:
-        <input defaultValue={nameSelected} onChange={updateNameSelected}/>
-      </label>
+      
+      <div>
+        <label>
+          Timesheet:
+          <input defaultValue={nameSelected} onChange={updateNameSelected}/>
+        </label>
 
-      <label>
-        Rate:
-        <input defaultValue={rate} type='number' onChange={updateRate}/>
-      </label>
+        <label>
+          Rate:
+          <input defaultValue={rate} type='number' onChange={updateRate}/>
+        </label>
+
+        Description:
+        <input defaultValue={description} onChange={updateDescription}/>
+      </div>
 
       {buildLineItemsTable(lineItems)}
 
