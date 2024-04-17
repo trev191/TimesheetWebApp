@@ -2,3 +2,20 @@
   height: 88vh;
   background-color: silver;
 }
+
+table, tr {
+  display: flex;
+  background-color: aliceblue;
+  border: 1px solid black;
+}
+
+/* TODO: style this nicer */
+td {
+  padding-left: 1em;
+  padding-right: 1em;
+  margin-right: 1em;
+}
+
+th {
+  margin-left: 1em;
+}
