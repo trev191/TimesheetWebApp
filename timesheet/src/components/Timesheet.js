@@ -89,16 +89,36 @@ function buildLineItemsTable(name) {
 
 function Timesheet() {
   const [nameSelected, setNameSelected] = useState('0');
+  const [rate, setRate] = useState(50);
 
   function updateNameSelected(event) {
     setNameSelected(event.target.value);
   }
 
+  function updateRate(event) {
+    let val = event.target.value;
+    if (val === '') {
+      val = 0;
+    }
+
+    setRate(parseInt(val));
+  }
+
   return (
     <div className="timesheet">
       {/* TODO: restrict input to only select timecard names that exist */}
-      <input defaultValue={nameSelected} onChange={updateNameSelected}/>
+      <label>
+        Timesheet:
+        <input defaultValue={nameSelected} onChange={updateNameSelected}/>
+      </label>
+
+      <label>
+        Rate:
+        <input defaultValue={rate} type='number' onChange={updateRate}/>
+      </label>
+
       {buildLineItemsTable(nameSelected)}
+
       <div className='totalMinsWorked'>
         Total Mins Worked: {calcTotalMinsWorked(nameSelected)}
       </div>
