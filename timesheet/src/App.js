@@ -1,13 +1,17 @@
 import './App.css';
+import Timesheet from './components/Timesheet';
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
+      <div className="App-header">
         <p>
           Timesheet Web App
         </p>
-      </header>
+      </div>
+      <div className="timesheet">
+        <Timesheet />
+      </div>
     </div>
   );
 }
