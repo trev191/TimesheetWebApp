@@ -1,5 +1,5 @@
 import '../styles/timesheet.css';
-import { useState, useEffect, TextField } from 'react';
+import { useState, useEffect } from 'react';
 
 // Hardcoded database for line items
 // TODO: transfer to cloud database
