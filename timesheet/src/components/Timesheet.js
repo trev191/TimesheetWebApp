@@ -1,5 +1,7 @@
 import '../styles/timesheet.css';
 import { useState, useEffect } from 'react';
+import { collection, getDocs } from "firebase/firestore";
+import { db } from '../database/firebase';
 
 // Hardcoded database for line items
 // TODO: transfer to cloud database
@@ -48,9 +50,20 @@ function Timesheet() {
   const [lineItems, setLineItems] = useState([]);
   const [description, setDescription] = useState('');
 
+  async function fetchData() {
+    await getDocs(collection(db, "timesheets"))
+            .then((querySnapshot) => {
+              const newData = querySnapshot.docs
+                                .map((doc) => ({...doc.data(), id: doc.id}));
+              console.log(newData);
+            })
+  }
+
   // Set line items list upon startup
   useEffect(() => {
     updateLineItemsList(nameSelected);
+
+    fetchData();
   }, [])
 
   // Calculate new total mins when lineItems array updates
