@@ -20,13 +20,13 @@ function Timesheet() {
   }
 
   // Grab a specific timesheet based on the timesheet name
-  async function fetchTimesheet(name) {
+  async function fetchTimesheet() {
     // Edge case for empty strings
-    if (name === '') {
+    if (nameSelected === '') {
       resetState();
       return;
     }
-    const timesheet = (await getDoc(doc(db, "timesheets", name))).data();
+    const timesheet = (await getDoc(doc(db, "timesheets", nameSelected))).data();
 
     // Set state based on whether timesheet exists or not
     if (timesheet === undefined) {
@@ -49,6 +49,8 @@ function Timesheet() {
 
     const currTimesheet = doc(db, 'timesheets', nameSelected);
 
+    // TODO: add conditional check for no timesheet retrieved from doc()
+
     const newLineItem = {
       date: newDate,
       numMins: newMins,
@@ -62,7 +64,7 @@ function Timesheet() {
         lineItems: [...lineItems, newLineItem]
       })
 
-      fetchTimesheet(nameSelected);
+      fetchTimesheet();
     } catch (err) {
       alert(err);
     }
@@ -93,12 +95,12 @@ function Timesheet() {
 
   // Load in timesheet data upon startup
   useEffect(() => {
-    fetchTimesheet(nameSelected);
+    fetchTimesheet();
   }, [])
 
   // Load in new timesheet data when name changes
   useEffect(() => {
-    fetchTimesheet(nameSelected);
+    fetchTimesheet();
   }, [nameSelected])
 
   // Calculate new total mins when lineItems array updates
@@ -162,7 +164,7 @@ function buildLineItemsTable(items) {
   return (
     <table>
       <tbody>
-        {itemsToJSX.length == 0 ? "Empty" : itemsToJSX}
+        {itemsToJSX}
       </tbody>
     </table>
   )
