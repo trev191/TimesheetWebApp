@@ -1,7 +1,8 @@
 import '../styles/timesheet.css';
 import { useState, useEffect } from 'react';
-import { collection, getDocs } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from '../database/firebase';
+import { v4 as uuidv4 } from 'uuid';
 
 function Timesheet() {
   const [nameSelected, setNameSelected] = useState('0');
@@ -9,30 +10,46 @@ function Timesheet() {
   const [totalMinsWorked, setTotalMinsWorked] = useState(0);
   const [lineItems, setLineItems] = useState([]);
   const [description, setDescription] = useState('');
+  const [newDate, setNewDate] = useState(new Date());
+  const [newMins, setNewMins] = useState(0);
 
   // Grab a specific timesheet based on the timesheet name
   async function fetchTimesheet(name) {
-    await getDocs(collection(db, "timesheets"))
-            .then((querySnapshot) => {
-              // Grab all timesheets from firestore collection
-              const timesheets = querySnapshot.docs
-                                .map((doc) => ({...doc.data(), id: doc.id}));
+    const timesheet = (await getDoc(doc(db, "timesheets", name))).data();
 
-              // Search for the specific timesheet name
-              const filteredTimesheet = timesheets.find((sheet) => sheet.name === name);
-              if (filteredTimesheet === undefined) {
-                updateLineItemsList([]);
-                setRate(0);
-                setDescription('');
-              }
-              
-              else {
-                updateLineItemsList(filteredTimesheet.lineItems);
-                setRate(filteredTimesheet.rate);
-                setDescription(filteredTimesheet.description);
-              }
+    // Set state based on whether timesheet exists or not
+    if (timesheet === undefined) {
+      updateLineItemsList([]);
+      setRate(0);
+      setDescription('');
+    }
+    else {
+      updateLineItemsList(timesheet.lineItems);
+      setRate(timesheet.rate);
+      setDescription(timesheet.description);
+    }
+  }
 
-            })
+  // Add in a new line item to current timesheet
+  async function addLineItem() {
+    const currTimesheet = doc(db, 'timesheets', nameSelected);
+    const newLineItem = {
+      date: newDate,
+      numMins: newMins,
+      id: uuidv4(),
+    };
+
+    // Update timesheet database with new line item
+    // and retrieve updated items
+    try {
+      await updateDoc(currTimesheet, {
+        lineItems: [...lineItems, newLineItem]
+      })
+
+      fetchTimesheet(nameSelected);
+    } catch (err) {
+      alert(err);
+    }
   }
 
   // Load in timesheet data upon startup
@@ -40,28 +57,22 @@ function Timesheet() {
     fetchTimesheet(nameSelected);
   }, [])
 
-    // Set line items list upon startup
-    useEffect(() => {
-      fetchTimesheet(nameSelected);
-    }, [nameSelected])
+  // Load in new timesheet data when name changes
+  useEffect(() => {
+    fetchTimesheet(nameSelected);
+  }, [nameSelected])
 
   // Calculate new total mins when lineItems array updates
   useEffect(() => {
     calcTotalMinsWorked(lineItems);
   }, [lineItems])
 
-  // When name selected changes, update name state as well as line items list
   function updateNameSelected(event) {
     setNameSelected(event.target.value);
   }
 
-  // When name selected changes, update name state as well as line items list
-  function updateDescription(event) {
-    setDescription(event.target.value);
-  }
-
   function updateLineItemsList(items) {
-    if (items.length === 0) {
+    if (items === undefined || items.length === 0) {
       alert(`Timesheet ${nameSelected} does not exist.`);
       setLineItems([]);
       return;
@@ -99,7 +110,6 @@ function buildLineItemsTable(items) {
   for (const lineItem of items) {
     const date = lineItem.date.toDate().toDateString();
     const mins = lineItem.numMins;
-    // TODO: generate uuid when creating a new line item
     const id = lineItem.id;
     itemsToJSX.push(
       <tr key={id}>
@@ -136,7 +146,16 @@ function buildLineItemsTable(items) {
 
         <label>
           Description:
-          <input value={description} onChange={updateDescription}/>
+          <input value={description} onChange={(e) => setDescription(e.target.value)}/>
+        </label>
+      </div>
+
+      <div>
+        <label>
+          Add new line:
+          <input value={newDate} onChange={(e) => setNewDate(e.target.value)}/>
+          <input value={newMins} type='number' onChange={(e) => setNewMins(parseInt(e.target.value))}/>
+          <button onClick={addLineItem} />
         </label>
       </div>
 
