@@ -10,7 +10,7 @@ function Timesheet() {
   const [totalMinsWorked, setTotalMinsWorked] = useState(0);
   const [lineItems, setLineItems] = useState([]);
   const [description, setDescription] = useState('');
-  const [newDate, setNewDate] = useState(undefined);
+  const [newDate, setNewDate] = useState('');
   const [newMins, setNewMins] = useState(0);
 
   function resetState() {
@@ -47,7 +47,8 @@ function Timesheet() {
       return;
     }
 
-    if (newDate === undefined) {
+    // Edge case - no date entered
+    if (newDate === '') {
       alert("Cannot add to timesheet without a valid date.");
       return;
     }
@@ -71,7 +72,7 @@ function Timesheet() {
 
       fetchTimesheet();
     } catch (err) {
-      alert(err);
+      alert("Cannot add to timesheet that does not yet exist. Save the timesheet from above first.");
     }
   }
 
@@ -158,16 +159,21 @@ function buildLineItemsTable(items) {
     const id = lineItem.id;
     itemsToJSX.push(
       <tr key={id}>
-        <th>Date:</th>
-        <td>{date}</td>
-        <th>Time:</th>
+        
+        <td scope="row">{date}</td>
         <td>{mins}</td>
       </tr>
     );
   }
 
   return (
-    <table>
+    <table className="table">
+      <thead className="thead-light">
+        <tr>
+          <th scope="col">Date</th>
+          <th scope="col">Minutes</th>
+        </tr>
+      </thead>
       <tbody>
         {itemsToJSX}
       </tbody>
