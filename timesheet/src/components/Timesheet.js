@@ -1,6 +1,6 @@
 import '../styles/timesheet.css';
 import { useState, useEffect } from 'react';
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
 import { db } from '../database/firebase';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -13,15 +13,24 @@ function Timesheet() {
   const [newDate, setNewDate] = useState(new Date());
   const [newMins, setNewMins] = useState(0);
 
+  function resetState() {
+    updateLineItemsList([]);
+    setRate(0);
+    setDescription('');
+  }
+
   // Grab a specific timesheet based on the timesheet name
   async function fetchTimesheet(name) {
+    // Edge case for empty strings
+    if (name === '') {
+      resetState();
+      return;
+    }
     const timesheet = (await getDoc(doc(db, "timesheets", name))).data();
 
     // Set state based on whether timesheet exists or not
     if (timesheet === undefined) {
-      updateLineItemsList([]);
-      setRate(0);
-      setDescription('');
+      resetState();
     }
     else {
       updateLineItemsList(timesheet.lineItems);
@@ -32,7 +41,14 @@ function Timesheet() {
 
   // Add in a new line item to current timesheet
   async function addLineItem() {
+    // Edge case - empty name
+    if (nameSelected === '') {
+      alert("Cannot add to timesheet without a name.");
+      return;
+    }
+
     const currTimesheet = doc(db, 'timesheets', nameSelected);
+
     const newLineItem = {
       date: newDate,
       numMins: newMins,
@@ -52,14 +68,22 @@ function Timesheet() {
     }
   }
 
+
+  // Update timesheet database with rate and description
   async function saveTimesheet() {
+    // Edge case - empty name
+    if (nameSelected === '') {
+      alert("Cannot save timesheet without a name.");
+      return;
+    }
+
     const currTimesheet = doc(db, 'timesheets', nameSelected);
 
-    // Update timesheet database with rate and description
     try {
-      await updateDoc(currTimesheet, {
+      await setDoc(currTimesheet, {
         rate: rate,
-        description: description
+        description: description,
+        lineItems: lineItems
       })
       alert("Timesheet was saved!");
     } catch (err) {
@@ -88,7 +112,6 @@ function Timesheet() {
 
   function updateLineItemsList(items) {
     if (items === undefined || items.length === 0) {
-      alert(`Timesheet ${nameSelected} does not exist.`);
       setLineItems([]);
       return;
     }
@@ -123,7 +146,7 @@ function calcTotalMinsWorked(items) {
 function buildLineItemsTable(items) {
   let itemsToJSX = [];
   for (const lineItem of items) {
-    const date = lineItem.date.toDate().toDateString();
+    const date = lineItem.date.toDate().toLocaleString();
     const mins = lineItem.numMins;
     const id = lineItem.id;
     itemsToJSX.push(
@@ -139,7 +162,7 @@ function buildLineItemsTable(items) {
   return (
     <table>
       <tbody>
-        {itemsToJSX}
+        {itemsToJSX.length == 0 ? "Empty" : itemsToJSX}
       </tbody>
     </table>
   )
@@ -165,8 +188,8 @@ function buildLineItemsTable(items) {
         </label>
 
         <button onClick={saveTimesheet}>
-            Save
-          </button>
+          Save
+        </button>
       </div>
 
       <div>
