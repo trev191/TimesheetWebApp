@@ -1,7 +1,7 @@
 .timesheet {
   padding-left: 2%;
   padding-right: 2%;
-  height: max-content;
+  height: 100vh;
 }
 
 .date {
@@ -9,13 +9,24 @@
   align-items: self-start;
 }
 
-/* TODO: style this nicer */
-td {
-  background-color: white;
+.data {
+  margin-top: 1em;
+  overflow-y: auto;
+  max-height: 70vh;
 }
 
-th {
-  margin-left: 1em;
+td {
+  background-color: white;
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+}
+
+th, thead {
+  position: sticky;
+}
+
+.table {
+  border-collapse: collapse;
 }
 
 .settings, .newItem, .data {
@@ -25,6 +36,5 @@ th {
 .card-body {
   width: 30%;
   background-color: beige;
-  margin-top: 2%;
-  padding-bottom: 2%;
+  margin-bottom: 1em;
 }

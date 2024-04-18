@@ -1,11 +1,12 @@
 import '../styles/timesheet.css';
 import { useState, useEffect } from 'react';
-import { doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, updateDoc, setDoc } from "firebase/firestore";
 import { db } from '../database/firebase';
 import { v4 as uuidv4 } from 'uuid';
 
 function Timesheet() {
-  const [nameSelected, setNameSelected] = useState('0');
+  const [timesheetNames, setTimesheetNames] = useState([]);
+  const [nameSelected, setNameSelected] = useState('');
   const [rate, setRate] = useState(0);
   const [totalMinsWorked, setTotalMinsWorked] = useState(0);
   const [lineItems, setLineItems] = useState([]);
@@ -39,6 +40,17 @@ function Timesheet() {
     }
   }
 
+  // Grab list of all timesheet names
+  async function fetchTimesheetNames() {
+    await getDocs(collection(db, "timesheets"))
+            .then((querySnapshot) => {
+              const timesheets = querySnapshot.docs
+                                .map((doc) => ({...doc.data(), name: doc.id}));
+              const names = timesheets.map((timesheet) => (timesheet.name));
+              setTimesheetNames(names);
+            })
+  }
+
   // Add in a new line item to current timesheet
   async function addLineItem() {
     // Edge case - empty name
@@ -55,8 +67,6 @@ function Timesheet() {
 
     const currTimesheet = doc(db, 'timesheets', nameSelected);
 
-    // TODO: add conditional check for no timesheet retrieved from doc()
-
     const newLineItem = {
       date: newDate,
       numMins: newMins,
@@ -64,18 +74,52 @@ function Timesheet() {
     };
 
     // Update timesheet database with new line item
-    // and retrieve updated items
+    // and add to state
     try {
       await updateDoc(currTimesheet, {
         lineItems: [...lineItems, newLineItem]
       })
 
-      fetchTimesheet();
+      setLineItems([...lineItems, newLineItem]);
     } catch (err) {
       alert("Cannot add to timesheet that does not yet exist. Save the timesheet from above first.");
     }
   }
 
+  // Remove a new line item from current timesheet
+  async function delLineItem(id) {
+    const currTimesheet = doc(db, 'timesheets', nameSelected);
+
+    const newLineItems = lineItems.filter((item) => item.id !== id)
+
+    // Update timesheet database with deleted line
+    // item and update state
+    try {
+      await updateDoc(currTimesheet, {
+        lineItems: newLineItems
+      })
+
+      setLineItems(newLineItems);
+    } catch (err) {
+      alert(err);
+    }
+  }
+
+  // Remove all line items from current timesheet
+  async function clearLineItems() {
+    const currTimesheet = doc(db, 'timesheets', nameSelected);
+
+    // Update timesheet database and state
+    try {
+      await updateDoc(currTimesheet, {
+        lineItems: []
+      })
+
+      setLineItems([]);
+    } catch (err) {
+      alert(err);
+    }
+  }
 
   // Update timesheet database with rate and description
   async function saveTimesheet() {
@@ -93,6 +137,7 @@ function Timesheet() {
         description: description,
         lineItems: lineItems
       })
+      fetchTimesheetNames();
       alert("Timesheet was saved!");
     } catch (err) {
       alert(err);
@@ -102,6 +147,7 @@ function Timesheet() {
   // Load in timesheet data upon startup
   useEffect(() => {
     fetchTimesheet();
+    fetchTimesheetNames();
   }, [])
 
   // Load in new timesheet data when name changes
@@ -159,9 +205,11 @@ function buildLineItemsTable(items) {
     const id = lineItem.id;
     itemsToJSX.push(
       <tr key={id}>
-        
         <td scope="row">{date}</td>
         <td>{mins}</td>
+        <td>
+          <button className="btn btn-outline-danger" onClick={() => delLineItem(id)}>X</button>
+        </td>
       </tr>
     );
   }
@@ -172,6 +220,9 @@ function buildLineItemsTable(items) {
         <tr>
           <th scope="col">Date</th>
           <th scope="col">Minutes</th>
+          <th scope="col">
+            <button type="button" className="btn btn-danger" onClick={clearLineItems}>Clear</button>
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -181,25 +232,34 @@ function buildLineItemsTable(items) {
   )
 }
 
+function buildNamesDatalist(names) {
+  const nameOptions = names.map((name) => <option value={name} key={uuidv4()}/>)
+
+  return (
+    <datalist id="timesheetNames">
+      {nameOptions}
+    </datalist>
+  )
+}
+
   return (
     <div className="timesheet">
-      {/* TODO: restrict input to only select timecard names that exist */}
       <div className="settings">
         <div className="input-group">
           <div className="input-group-prepend">
             <span className="input-group-text" id="basic-addon1">Timesheet name:</span>
           </div>
-          <input type="text"
-            className="form-control"
-            aria-describedby="basic-addon1"
-            value={nameSelected}
-            onChange={updateNameSelected}
-          />
+
+          <input list="timesheetNames" value={nameSelected} onChange={updateNameSelected} placeholder='Click or type...'/>
+            {buildNamesDatalist(timesheetNames)}
         </div>
+
 
         <div className="input-group input-group-sm mb-2">
           <div className="input-group-prepend">
-            <span className="input-group-text" id="inputGroup-sizing-sm">Rate:</span>
+            <span className="input-group-text" id="inputGroup-sizing-sm">
+              Rate:
+            </span>
           </div>
           <input
             className="form-control"
@@ -212,7 +272,7 @@ function buildLineItemsTable(items) {
 
           {/* Description */}
           <div className="input-group-prepend">
-            <span className="input-group-text">
+            <span className="input-group-text" id="inputGroup-sizing-sm">
               Description:
             </span>
           </div>
@@ -223,7 +283,7 @@ function buildLineItemsTable(items) {
           />
         </div>
 
-        <button type="button" class="btn btn-primary" onClick={saveTimesheet}>
+        <button type="button" className="btn btn-primary" onClick={saveTimesheet}>
           Save
         </button>
       </div>
@@ -231,7 +291,7 @@ function buildLineItemsTable(items) {
       <div className='newItem'>
         <div className="input-group mb-2">
           <div className="input-group-prepend">
-            <span className="input-group-text" id="">Date and Number of Minutes</span>
+            <span className="input-group-text" id="">Date and Number of Minutes:</span>
           </div>
           <input
               className="form-control"
@@ -246,7 +306,7 @@ function buildLineItemsTable(items) {
               onChange={(e) => setNewMins(parseInt(e.target.value))}
             />
         </div>
-        <button type="button" class="btn btn-primary" onClick={addLineItem}>
+        <button type="button" className="btn btn-primary" onClick={addLineItem}>
           Add Item
         </button>
 
@@ -254,15 +314,15 @@ function buildLineItemsTable(items) {
 
       <div className="data">
         {buildLineItemsTable(lineItems)}
+      </div>
 
-        <div className="card-body">
-          <div>
-            Total Time: {totalMinsWorked}
-          </div>
+      <div className="card-body">
+        <div>
+          Total Time: {totalMinsWorked}
+        </div>
 
-          <div>
-            Total Cost: {calcTotalCost(totalMinsWorked, rate)}
-          </div>
+        <div>
+          Total Cost: {calcTotalCost(totalMinsWorked, rate)}
         </div>
       </div>
     </div>
