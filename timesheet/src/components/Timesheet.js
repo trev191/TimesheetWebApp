@@ -52,6 +52,21 @@ function Timesheet() {
     }
   }
 
+  async function saveTimesheet() {
+    const currTimesheet = doc(db, 'timesheets', nameSelected);
+
+    // Update timesheet database with rate and description
+    try {
+      await updateDoc(currTimesheet, {
+        rate: rate,
+        description: description
+      })
+      alert("Timesheet was saved!");
+    } catch (err) {
+      alert(err);
+    }
+  }
+
   // Load in timesheet data upon startup
   useEffect(() => {
     fetchTimesheet(nameSelected);
@@ -148,6 +163,10 @@ function buildLineItemsTable(items) {
           Description:
           <input value={description} onChange={(e) => setDescription(e.target.value)}/>
         </label>
+
+        <button onClick={saveTimesheet}>
+            Save
+          </button>
       </div>
 
       <div>
@@ -155,7 +174,9 @@ function buildLineItemsTable(items) {
           Add new line:
           <input value={newDate} onChange={(e) => setNewDate(e.target.value)}/>
           <input value={newMins} type='number' onChange={(e) => setNewMins(parseInt(e.target.value))}/>
-          <button onClick={addLineItem} />
+          <button onClick={addLineItem}>
+            Add Item
+          </button>
         </label>
       </div>
 
