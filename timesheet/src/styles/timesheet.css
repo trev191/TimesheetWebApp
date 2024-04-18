@@ -19,3 +19,9 @@ td {
 th {
   margin-left: 1em;
 }
+
+.settings, .newItem, .data {
+  padding-top: 1em;
+  padding-left: 3%;
+  padding-right: 3%;
+}

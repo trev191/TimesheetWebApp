@@ -5,6 +5,7 @@ import { getFirestore } from 'firebase/firestore';
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
+// TODO: create new database and hide these keys in env file
 const firebaseConfig = {
   apiKey: "AIzaSyA78NnILyNefXjrlGeXffTYc2yL54zq3Pg",
   authDomain: "timesheet-826a7.firebaseapp.com",

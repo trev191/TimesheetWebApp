@@ -10,7 +10,7 @@ function Timesheet() {
   const [totalMinsWorked, setTotalMinsWorked] = useState(0);
   const [lineItems, setLineItems] = useState([]);
   const [description, setDescription] = useState('');
-  const [newDate, setNewDate] = useState(new Date());
+  const [newDate, setNewDate] = useState(undefined);
   const [newMins, setNewMins] = useState(0);
 
   function resetState() {
@@ -44,6 +44,11 @@ function Timesheet() {
     // Edge case - empty name
     if (nameSelected === '') {
       alert("Cannot add to timesheet without a name.");
+      return;
+    }
+
+    if (newDate === undefined) {
+      alert("Cannot add to timesheet without a valid date.");
       return;
     }
 
@@ -148,7 +153,7 @@ function calcTotalMinsWorked(items) {
 function buildLineItemsTable(items) {
   let itemsToJSX = [];
   for (const lineItem of items) {
-    const date = lineItem.date.toDate().toLocaleString();
+    const date = new Date(lineItem.date).toLocaleString();
     const mins = lineItem.numMins;
     const id = lineItem.id;
     itemsToJSX.push(
@@ -173,46 +178,86 @@ function buildLineItemsTable(items) {
   return (
     <div className="timesheet">
       {/* TODO: restrict input to only select timecard names that exist */}
-      <div>
-        <label>
-          Timesheet:
-          <input value={nameSelected} onChange={updateNameSelected}/>
-        </label>
+      <div className="settings">
+        <div className="input-group">
+          <div className="input-group-prepend">
+            <span className="input-group-text" id="basic-addon1">Timesheet name:</span>
+          </div>
+          <input type="text"
+            className="form-control"
+            aria-describedby="basic-addon1"
+            value={nameSelected}
+            onChange={updateNameSelected}
+          />
+        </div>
 
-        <label>
-          Rate:
-          <input value={rate} type='number' onChange={updateRate}/>
-        </label>
+        <div className="input-group input-group-sm mb-2">
+          <div className="input-group-prepend">
+            <span className="input-group-text" id="inputGroup-sizing-sm">Rate:</span>
+          </div>
+          <input
+            className="form-control"
+            aria-label="Small"
+            aria-describedby="inputGroup-sizing-sm"
+            value={rate}
+            type='number'
+            onChange={updateRate}
+          />
 
-        <label>
-          Description:
-          <input value={description} onChange={(e) => setDescription(e.target.value)}/>
-        </label>
+          {/* Description */}
+          <div className="input-group-prepend">
+            <span className="input-group-text">
+              Description:
+            </span>
+          </div>
+          <textarea
+            className="form-control"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </div>
 
         <button onClick={saveTimesheet}>
           Save
         </button>
       </div>
 
-      <div>
-        <label>
-          Add new line:
-          <input value={newDate} onChange={(e) => setNewDate(e.target.value)}/>
-          <input value={newMins} type='number' onChange={(e) => setNewMins(parseInt(e.target.value))}/>
-          <button onClick={addLineItem}>
-            Add Item
-          </button>
-        </label>
+      <div className='newItem'>
+        <div className="input-group mb-2">
+          <div className="input-group-prepend">
+            <span className="input-group-text" id="">Date and Number of Minutes</span>
+          </div>
+          <input
+              className="form-control"
+              type="datetime-local"
+              value={newDate}
+              onChange={(e) => setNewDate(e.target.value)}
+            />
+            <input
+              className="form-control"
+              value={newMins}
+              type='number'
+              onChange={(e) => setNewMins(parseInt(e.target.value))}
+            />
+        </div>
+        <button onClick={addLineItem}>
+          Add Item
+        </button>
+
       </div>
 
-      {buildLineItemsTable(lineItems)}
 
-      <div>
-        Total Time: {totalMinsWorked}
-      </div>
+      <div className="data">
+        {buildLineItemsTable(lineItems)}
 
-      <div>
-        Total Cost: {calcTotalCost(totalMinsWorked, rate)}
+        <div>
+          Total Time: {totalMinsWorked}
+        </div>
+
+        <div>
+          Total Cost: {calcTotalCost(totalMinsWorked, rate)}
+        </div>
+
       </div>
     </div>
   )
