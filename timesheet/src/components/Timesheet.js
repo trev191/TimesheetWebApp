@@ -55,8 +55,6 @@ function Timesheet() {
 
     const currTimesheet = doc(db, 'timesheets', nameSelected);
 
-    // TODO: add conditional check for no timesheet retrieved from doc()
-
     const newLineItem = {
       date: newDate,
       numMins: newMins,
@@ -64,18 +62,36 @@ function Timesheet() {
     };
 
     // Update timesheet database with new line item
-    // and retrieve updated items
+    // and add to state
     try {
       await updateDoc(currTimesheet, {
         lineItems: [...lineItems, newLineItem]
       })
 
-      fetchTimesheet();
+      setLineItems([...lineItems, newLineItem]);
     } catch (err) {
       alert("Cannot add to timesheet that does not yet exist. Save the timesheet from above first.");
     }
   }
 
+  // Remove a new line item from current timesheet
+  async function delLineItem(id) {
+    const currTimesheet = doc(db, 'timesheets', nameSelected);
+
+    const newLineItems = lineItems.filter((item) => item.id !== id)
+
+    // Update timesheet database with deleted line
+    // item and update state
+    try {
+      await updateDoc(currTimesheet, {
+        lineItems: newLineItems
+      })
+
+      setLineItems(newLineItems);
+    } catch (err) {
+      alert(err);
+    }
+  }
 
   // Update timesheet database with rate and description
   async function saveTimesheet() {
@@ -162,6 +178,9 @@ function buildLineItemsTable(items) {
         
         <td scope="row">{date}</td>
         <td>{mins}</td>
+        <td>
+          <button onClick={() => delLineItem(id)}>X</button>
+        </td>
       </tr>
     );
   }
@@ -172,10 +191,11 @@ function buildLineItemsTable(items) {
         <tr>
           <th scope="col">Date</th>
           <th scope="col">Minutes</th>
+          <th scope="col"></th>
         </tr>
       </thead>
       <tbody>
-        {itemsToJSX}
+        {itemsToJSX.length === 0 ? <tr> <td /> <td /> <td /> </tr> : itemsToJSX}
       </tbody>
     </table>
   )
@@ -223,7 +243,7 @@ function buildLineItemsTable(items) {
           />
         </div>
 
-        <button type="button" class="btn btn-primary" onClick={saveTimesheet}>
+        <button type="button" className="btn btn-primary" onClick={saveTimesheet}>
           Save
         </button>
       </div>
@@ -246,7 +266,7 @@ function buildLineItemsTable(items) {
               onChange={(e) => setNewMins(parseInt(e.target.value))}
             />
         </div>
-        <button type="button" class="btn btn-primary" onClick={addLineItem}>
+        <button type="button" className="btn btn-primary" onClick={addLineItem}>
           Add Item
         </button>
 
