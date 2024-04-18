@@ -1,10 +1,11 @@
 import '../styles/timesheet.css';
 import { useState, useEffect } from 'react';
-import { doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, updateDoc, setDoc } from "firebase/firestore";
 import { db } from '../database/firebase';
 import { v4 as uuidv4 } from 'uuid';
 
 function Timesheet() {
+  const [timesheetNames, setTimesheetNames] = useState([]);
   const [nameSelected, setNameSelected] = useState('0');
   const [rate, setRate] = useState(0);
   const [totalMinsWorked, setTotalMinsWorked] = useState(0);
@@ -37,6 +38,17 @@ function Timesheet() {
       setRate(timesheet.rate);
       setDescription(timesheet.description);
     }
+  }
+
+  // Grab list of all timesheet names
+  async function fetchTimesheetNames() {
+    await getDocs(collection(db, "timesheets"))
+            .then((querySnapshot) => {
+              const timesheets = querySnapshot.docs
+                                .map((doc) => ({...doc.data(), name: doc.id}));
+              const names = timesheets.map((timesheet) => (timesheet.name));
+              setTimesheetNames(names);
+            })
   }
 
   // Add in a new line item to current timesheet
@@ -125,6 +137,7 @@ function Timesheet() {
         description: description,
         lineItems: lineItems
       })
+      fetchTimesheetNames();
       alert("Timesheet was saved!");
     } catch (err) {
       alert(err);
@@ -134,6 +147,7 @@ function Timesheet() {
   // Load in timesheet data upon startup
   useEffect(() => {
     fetchTimesheet();
+    fetchTimesheetNames();
   }, [])
 
   // Load in new timesheet data when name changes
@@ -213,7 +227,7 @@ function buildLineItemsTable(items) {
         </tr>
       </thead>
       <tbody>
-        {itemsToJSX.length === 0 ? <tr> <td /> <td /> <td /> </tr> : itemsToJSX}
+        {itemsToJSX}
       </tbody>
     </table>
   )
