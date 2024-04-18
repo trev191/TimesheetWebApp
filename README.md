@@ -5,6 +5,7 @@ Simple web app to document timesheets. Features include:
   - Updating rate and description
   - Totals for time worked and total cost
   - Saving and (re)loading another timesheet
+  - Adding/deleting line items
 
 To run from your browser, simply access the app at https://timesheet-826a7.web.app.<br />
 
