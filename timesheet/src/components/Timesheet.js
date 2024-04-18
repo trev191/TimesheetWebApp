@@ -223,7 +223,7 @@ function buildLineItemsTable(items) {
           />
         </div>
 
-        <button onClick={saveTimesheet}>
+        <button type="button" class="btn btn-primary" onClick={saveTimesheet}>
           Save
         </button>
       </div>
@@ -246,24 +246,24 @@ function buildLineItemsTable(items) {
               onChange={(e) => setNewMins(parseInt(e.target.value))}
             />
         </div>
-        <button onClick={addLineItem}>
+        <button type="button" class="btn btn-primary" onClick={addLineItem}>
           Add Item
         </button>
 
       </div>
 
-
       <div className="data">
         {buildLineItemsTable(lineItems)}
 
-        <div>
-          Total Time: {totalMinsWorked}
-        </div>
+        <div className="card-body">
+          <div>
+            Total Time: {totalMinsWorked}
+          </div>
 
-        <div>
-          Total Cost: {calcTotalCost(totalMinsWorked, rate)}
+          <div>
+            Total Cost: {calcTotalCost(totalMinsWorked, rate)}
+          </div>
         </div>
-
       </div>
     </div>
   )
