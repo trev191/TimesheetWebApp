@@ -1,21 +1,30 @@
 .timesheet {
-  height: 88vh;
-  background-color: silver;
+  padding-left: 2%;
+  padding-right: 2%;
+  height: max-content;
 }
 
-table, tr {
-  display: flex;
-  background-color: aliceblue;
-  border: 1px solid black;
+.date {
+  display: inline-block;
+  align-items: self-start;
 }
 
 /* TODO: style this nicer */
 td {
-  padding-left: 1em;
-  padding-right: 1em;
-  margin-right: 1em;
+  background-color: white;
 }
 
 th {
   margin-left: 1em;
+}
+
+.settings, .newItem, .data {
+  padding-top: 1em;
+}
+
+.card-body {
+  width: 30%;
+  background-color: beige;
+  margin-top: 2%;
+  padding-bottom: 2%;
 }

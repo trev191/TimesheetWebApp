@@ -1,5 +1,6 @@
 .App {
   text-align: center;
+  background-color: silver;
 }
 
 .App-header {
@@ -9,6 +10,8 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  padding-top: 3%;
+  padding-bottom: 2%;
   font-size: calc(10px + 1em);
   color: white;
 }
