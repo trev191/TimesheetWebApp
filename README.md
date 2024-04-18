@@ -4,8 +4,9 @@ Simple web app to document timesheets. Features include:
   - Adding line items consisting of date and minutes worked
   - Updating rate and description
   - Totals for time worked and total cost
-  - Saving and (re)loading another timesheet
+  - Saving and (re)loading another timesheet by name
   - Adding/deleting line items
+  - Cloud hosting by Firebase
 
 To run from your browser, simply access the app at https://timesheet-826a7.web.app.<br />
 
