@@ -93,6 +93,22 @@ function Timesheet() {
     }
   }
 
+  // Remove all line items from current timesheet
+  async function clearLineItems() {
+    const currTimesheet = doc(db, 'timesheets', nameSelected);
+
+    // Update timesheet database and state
+    try {
+      await updateDoc(currTimesheet, {
+        lineItems: []
+      })
+
+      setLineItems([]);
+    } catch (err) {
+      alert(err);
+    }
+  }
+
   // Update timesheet database with rate and description
   async function saveTimesheet() {
     // Edge case - empty name
@@ -179,7 +195,7 @@ function buildLineItemsTable(items) {
         <td scope="row">{date}</td>
         <td>{mins}</td>
         <td>
-          <button onClick={() => delLineItem(id)}>X</button>
+          <button className="btn btn-outline-danger" onClick={() => delLineItem(id)}>X</button>
         </td>
       </tr>
     );
@@ -191,7 +207,9 @@ function buildLineItemsTable(items) {
         <tr>
           <th scope="col">Date</th>
           <th scope="col">Minutes</th>
-          <th scope="col"></th>
+          <th scope="col">
+            <button type="button" className="btn btn-danger" onClick={clearLineItems}>Clear</button>
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -219,7 +237,9 @@ function buildLineItemsTable(items) {
 
         <div className="input-group input-group-sm mb-2">
           <div className="input-group-prepend">
-            <span className="input-group-text" id="inputGroup-sizing-sm">Rate:</span>
+            <span className="input-group-text" id="inputGroup-sizing-sm">
+              Rate:
+            </span>
           </div>
           <input
             className="form-control"
@@ -232,7 +252,7 @@ function buildLineItemsTable(items) {
 
           {/* Description */}
           <div className="input-group-prepend">
-            <span className="input-group-text">
+            <span className="input-group-text" id="inputGroup-sizing-sm">
               Description:
             </span>
           </div>
@@ -274,15 +294,15 @@ function buildLineItemsTable(items) {
 
       <div className="data">
         {buildLineItemsTable(lineItems)}
+      </div>
 
-        <div className="card-body">
-          <div>
-            Total Time: {totalMinsWorked}
-          </div>
+      <div className="card-body">
+        <div>
+          Total Time: {totalMinsWorked}
+        </div>
 
-          <div>
-            Total Cost: {calcTotalCost(totalMinsWorked, rate)}
-          </div>
+        <div>
+          Total Cost: {calcTotalCost(totalMinsWorked, rate)}
         </div>
       </div>
     </div>
