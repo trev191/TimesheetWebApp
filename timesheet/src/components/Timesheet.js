@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 function Timesheet() {
   const [timesheetNames, setTimesheetNames] = useState([]);
-  const [nameSelected, setNameSelected] = useState('0');
+  const [nameSelected, setNameSelected] = useState('');
   const [rate, setRate] = useState(0);
   const [totalMinsWorked, setTotalMinsWorked] = useState(0);
   const [lineItems, setLineItems] = useState([]);
@@ -205,7 +205,6 @@ function buildLineItemsTable(items) {
     const id = lineItem.id;
     itemsToJSX.push(
       <tr key={id}>
-        
         <td scope="row">{date}</td>
         <td>{mins}</td>
         <td>
@@ -233,21 +232,28 @@ function buildLineItemsTable(items) {
   )
 }
 
+function buildNamesDatalist(names) {
+  const nameOptions = names.map((name) => <option value={name} key={uuidv4()}/>)
+
+  return (
+    <datalist id="timesheetNames">
+      {nameOptions}
+    </datalist>
+  )
+}
+
   return (
     <div className="timesheet">
-      {/* TODO: restrict input to only select timecard names that exist */}
       <div className="settings">
         <div className="input-group">
           <div className="input-group-prepend">
             <span className="input-group-text" id="basic-addon1">Timesheet name:</span>
           </div>
-          <input type="text"
-            className="form-control"
-            aria-describedby="basic-addon1"
-            value={nameSelected}
-            onChange={updateNameSelected}
-          />
+
+          <input list="timesheetNames" value={nameSelected} onChange={updateNameSelected} placeholder='Click or type...'/>
+            {buildNamesDatalist(timesheetNames)}
         </div>
+
 
         <div className="input-group input-group-sm mb-2">
           <div className="input-group-prepend">
@@ -285,7 +291,7 @@ function buildLineItemsTable(items) {
       <div className='newItem'>
         <div className="input-group mb-2">
           <div className="input-group-prepend">
-            <span className="input-group-text" id="">Date and Number of Minutes</span>
+            <span className="input-group-text" id="">Date and Number of Minutes:</span>
           </div>
           <input
               className="form-control"
