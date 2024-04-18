@@ -3,68 +3,47 @@ import { useState, useEffect } from 'react';
 import { collection, getDocs } from "firebase/firestore";
 import { db } from '../database/firebase';
 
-// Hardcoded database for line items
-// TODO: transfer to cloud database
-const database = {
-  '0': [
-    {
-      'id': 1,
-      'date': new Date(2000, 0, 1),
-      'numMins': 10
-    },
-    {
-      'id': 2,
-      'date': new Date(2005, 2, 5),
-      'numMins': 20
-    },
-    {
-      'id': 3,
-      'date': new Date(2010, 7, 16),
-      'numMins': 33
-    },
-  ],
-  
-  '1': [
-    {
-      'id': 1,
-      'date': new Date(1900, 0, 1),
-      'numMins': 11
-    },
-    {
-      'id': 2,
-      'date': new Date(1905, 2, 5),
-      'numMins': 22
-    },
-    {
-      'id': 3,
-      'date': new Date(1910, 7, 16),
-      'numMins': 36
-    },
-  ]
-}
-
 function Timesheet() {
   const [nameSelected, setNameSelected] = useState('0');
-  const [rate, setRate] = useState(50);
+  const [rate, setRate] = useState(0);
   const [totalMinsWorked, setTotalMinsWorked] = useState(0);
   const [lineItems, setLineItems] = useState([]);
   const [description, setDescription] = useState('');
 
-  async function fetchData() {
+  // Grab a specific timesheet based on the timesheet name
+  async function fetchTimesheet(name) {
     await getDocs(collection(db, "timesheets"))
             .then((querySnapshot) => {
-              const newData = querySnapshot.docs
+              // Grab all timesheets from firestore collection
+              const timesheets = querySnapshot.docs
                                 .map((doc) => ({...doc.data(), id: doc.id}));
-              console.log(newData);
+
+              // Search for the specific timesheet name
+              const filteredTimesheet = timesheets.find((sheet) => sheet.name === name);
+              if (filteredTimesheet === undefined) {
+                updateLineItemsList([]);
+                setRate(0);
+                setDescription('');
+              }
+              
+              else {
+                updateLineItemsList(filteredTimesheet.lineItems);
+                setRate(filteredTimesheet.rate);
+                setDescription(filteredTimesheet.description);
+              }
+
             })
   }
 
-  // Set line items list upon startup
+  // Load in timesheet data upon startup
   useEffect(() => {
-    updateLineItemsList(nameSelected);
-
-    fetchData();
+    fetchTimesheet(nameSelected);
   }, [])
+
+    // Set line items list upon startup
+    useEffect(() => {
+      fetchTimesheet(nameSelected);
+    }, [nameSelected])
 
   // Calculate new total mins when lineItems array updates
   useEffect(() => {
@@ -74,7 +53,6 @@ function Timesheet() {
   // When name selected changes, update name state as well as line items list
   function updateNameSelected(event) {
     setNameSelected(event.target.value);
-    updateLineItemsList(event.target.value);
   }
 
   // When name selected changes, update name state as well as line items list
@@ -82,14 +60,14 @@ function Timesheet() {
     setDescription(event.target.value);
   }
 
-  function updateLineItemsList(name) {
-    if (database[name] === undefined) {
-      alert(`Timesheet ${name} does not exist.`);
+  function updateLineItemsList(items) {
+    if (items.length === 0) {
+      alert(`Timesheet ${nameSelected} does not exist.`);
       setLineItems([]);
       return;
     }
     else {
-      setLineItems(database[name]);
+      setLineItems(items);
     }
   }
 
@@ -117,12 +95,13 @@ function calcTotalMinsWorked(items) {
 
 // Build JSX list from items
 function buildLineItemsTable(items) {
-  let itemsFromDatabase = [];
+  let itemsToJSX = [];
   for (const lineItem of items) {
-    const date = lineItem.date.toDateString();
+    const date = lineItem.date.toDate().toDateString();
     const mins = lineItem.numMins;
+    // TODO: generate uuid when creating a new line item
     const id = lineItem.id;
-    itemsFromDatabase.push(
+    itemsToJSX.push(
       <tr key={id}>
         <th>Date:</th>
         <td>{date}</td>
@@ -135,7 +114,7 @@ function buildLineItemsTable(items) {
   return (
     <table>
       <tbody>
-        {itemsFromDatabase}
+        {itemsToJSX}
       </tbody>
     </table>
   )
@@ -144,20 +123,21 @@ function buildLineItemsTable(items) {
   return (
     <div className="timesheet">
       {/* TODO: restrict input to only select timecard names that exist */}
-      
       <div>
         <label>
           Timesheet:
-          <input defaultValue={nameSelected} onChange={updateNameSelected}/>
+          <input value={nameSelected} onChange={updateNameSelected}/>
         </label>
 
         <label>
           Rate:
-          <input defaultValue={rate} type='number' onChange={updateRate}/>
+          <input value={rate} type='number' onChange={updateRate}/>
         </label>
 
-        Description:
-        <input defaultValue={description} onChange={updateDescription}/>
+        <label>
+          Description:
+          <input value={description} onChange={updateDescription}/>
+        </label>
       </div>
 
       {buildLineItemsTable(lineItems)}
