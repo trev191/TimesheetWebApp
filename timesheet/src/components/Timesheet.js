@@ -208,7 +208,7 @@ function buildNamesDropdownItems(names) {
 }
 
   return (
-    <div className="timesheet">
+    <div>
       <div className="settings">
         {/* Timesheet Name */}
         <div className="input-group">
