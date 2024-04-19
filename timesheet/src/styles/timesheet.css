@@ -1,9 +1,3 @@
-.timesheet {
-  padding-left: 2%;
-  padding-right: 2%;
-  height: 100vh;
-}
-
 .date {
   display: inline-block;
   align-items: self-start;
@@ -36,5 +30,6 @@ th, thead {
 .card-body {
   width: 30%;
   background-color: beige;
+  margin-top: 1em;
   margin-bottom: 1em;
 }
