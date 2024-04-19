@@ -85,7 +85,13 @@ function Timesheet() {
   async function saveTimesheet() {
     // Edge case - empty name
     if (nameSelected === '') {
-      alert("Cannot save timesheet without a name.");
+      alert("Error saving - timesheet must have a name.");
+      return;
+    }
+
+    // Edge case - empty line item list
+    if (lineItems.length === 0) {
+      alert("Error saving - timesheet must have at least 1 line item.");
       return;
     }
 
