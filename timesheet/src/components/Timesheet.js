@@ -51,21 +51,13 @@ function Timesheet() {
             })
   }
 
-  // Add in a new line item to current timesheet
-  async function addLineItem() {
-    // Edge case - empty name
-    if (nameSelected === '') {
-      alert("Cannot add to timesheet without a name.");
-      return;
-    }
-
+  // Add a new line item to current state
+  function addLineItem() {
     // Edge case - no date entered
     if (newDate === '') {
-      alert("Cannot add to timesheet without a valid date.");
+      alert("Cannot add item without a valid date.");
       return;
     }
-
-    const currTimesheet = doc(db, 'timesheets', nameSelected);
 
     const newLineItem = {
       date: newDate,
@@ -73,52 +65,20 @@ function Timesheet() {
       id: uuidv4(),
     };
 
-    // Update timesheet database with new line item
-    // and add to state
-    try {
-      await updateDoc(currTimesheet, {
-        lineItems: [...lineItems, newLineItem]
-      })
-
-      setLineItems([...lineItems, newLineItem]);
-    } catch (err) {
-      alert("Cannot add to timesheet that does not yet exist. Save the timesheet from above first.");
-    }
+    setLineItems([...lineItems, newLineItem]);
   }
 
   // Remove a new line item from current timesheet
-  async function delLineItem(id) {
-    const currTimesheet = doc(db, 'timesheets', nameSelected);
-
+  function delLineItem(id) {
+    // Update state with removed line item
     const newLineItems = lineItems.filter((item) => item.id !== id)
-
-    // Update timesheet database with deleted line
-    // item and update state
-    try {
-      await updateDoc(currTimesheet, {
-        lineItems: newLineItems
-      })
-
-      setLineItems(newLineItems);
-    } catch (err) {
-      alert(err);
-    }
+    setLineItems(newLineItems);
   }
 
   // Remove all line items from current timesheet
-  async function clearLineItems() {
-    const currTimesheet = doc(db, 'timesheets', nameSelected);
-
-    // Update timesheet database and state
-    try {
-      await updateDoc(currTimesheet, {
-        lineItems: []
-      })
-
-      setLineItems([]);
-    } catch (err) {
-      alert(err);
-    }
+  function clearLineItems() {
+    // Update state with empty line items
+    setLineItems([]);
   }
 
   // Update timesheet database with rate and description
@@ -250,7 +210,7 @@ function buildNamesDatalist(names) {
             <span className="input-group-text" id="basic-addon1">Timesheet name:</span>
           </div>
 
-          <input list="timesheetNames" value={nameSelected} onChange={updateNameSelected} placeholder='Click or type...'/>
+          <input list="timesheetNames" value={nameSelected} onChange={updateNameSelected} placeholder='Select or type...'/>
             {buildNamesDatalist(timesheetNames)}
         </div>
 
@@ -284,7 +244,7 @@ function buildNamesDatalist(names) {
         </div>
 
         <button type="button" className="btn btn-primary" onClick={saveTimesheet}>
-          Save
+          Save Timesheet
         </button>
       </div>
 
