@@ -192,30 +192,39 @@ function buildLineItemsTable(items) {
   )
 }
 
-function buildNamesDatalist(names) {
-  const nameOptions = names.map((name) => <option value={name} key={uuidv4()}/>)
+function buildNamesDropdownItems(names) {
+  // NOTE: Adding key to <option> below prevents the select field from reflecting what's
+  // currently selected. However, it's added here to mute the React error for missing keys
+  const nameOptions = names.map((name) =>
+    <option onClick={() => setNameSelected(name)} value={name} key={uuidv4()}>{name}</option>
+  );
 
   return (
-    <datalist id="timesheetNames">
+    <select id="timesheetNames">
+      <option onClick={() => setNameSelected('')} value={''} />
       {nameOptions}
-    </datalist>
+    </select>
   )
 }
 
   return (
     <div className="timesheet">
       <div className="settings">
+        {/* Timesheet Name */}
         <div className="input-group">
           <div className="input-group-prepend">
             <span className="input-group-text" id="basic-addon1">Timesheet name:</span>
           </div>
-
-          <input list="timesheetNames" value={nameSelected} onChange={updateNameSelected} placeholder='Select or type...'/>
-            {buildNamesDatalist(timesheetNames)}
+          <input value={nameSelected} onChange={updateNameSelected} placeholder='Create new...'/>
+          
+          <div className="input-group-prepend">
+            <span className="input-group-text" id="basic-addon1">Select existing:</span>
+          </div>
+            {buildNamesDropdownItems(timesheetNames)}
         </div>
 
-
-        <div className="input-group input-group-sm mb-2">
+        <div className="input-group mb-2">
+          {/* Rate */}
           <div className="input-group-prepend">
             <span className="input-group-text" id="inputGroup-sizing-sm">
               Rate:
@@ -250,21 +259,27 @@ function buildNamesDatalist(names) {
 
       <div className='newItem'>
         <div className="input-group mb-2">
+          {/* Date */}
           <div className="input-group-prepend">
-            <span className="input-group-text" id="">Date and Number of Minutes:</span>
+            <span className="input-group-text" id="">Date:</span>
           </div>
           <input
-              className="form-control"
-              type="datetime-local"
-              value={newDate}
-              onChange={(e) => setNewDate(e.target.value)}
-            />
-            <input
-              className="form-control"
-              value={newMins}
-              type='number'
-              onChange={(e) => setNewMins(parseInt(e.target.value))}
-            />
+            className="form-control"
+            type="datetime-local"
+            value={newDate}
+            onChange={(e) => setNewDate(e.target.value)}
+          />
+
+          {/* Number of Minutes */}
+          <div className="input-group-prepend">
+            <span className="input-group-text" id="">Number of Minutes:</span>
+          </div>
+          <input
+            className="form-control"
+            value={newMins}
+            type='number'
+            onChange={(e) => setNewMins(parseInt(e.target.value))}
+          />
         </div>
         <button type="button" className="btn btn-primary" onClick={addLineItem}>
           Add Item
